@@ -105,32 +105,33 @@ def create_drinks(jwt):
 
 @app.route('/drinks/<int:id>', methods=['PATCH'])
 @requires_auth('patch:drinks')
-def patch_drinks(jwt, id):
+def update_drink(payload, id):
     try:
         body = request.get_json()
-        drink = Drink.query.filter_by(id=id).one_or_none()
+        drink = Drink.query.filter(Drink.id == id).one_or_none()
 
         if drink is None:
             abort(404)
 
-        if 'title' in body and 'recipe' in body:
-            new_title = body.get('title')
-            new_recipe = json.dumps(body.get('recipe'))
-
+        
+        new_title = body.get('title')
+        new_recipe = body.get('recipe')
         if new_title:
             drink.title = new_title
 
         if new_recipe:
-            drink.recipe = new_recipe
+            drink.recipe = json.dumps(body.get('recipe'))
+
         drink.update()
-
-        return jsonify({
-            'success': True,
-            'drinks': [drink.long()]
-        }), 200
-
     except:
         abort(400)
+
+    return jsonify(
+            {
+                'success': True, 
+                'drinks': [drink.long()]
+            }
+        ), 200
 
 '''
 @TODO implement endpoint
